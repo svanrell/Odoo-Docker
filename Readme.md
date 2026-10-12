@@ -1,5 +1,8 @@
 # Despliegue y Configuración de Odoo 19 con Docker Compose
 
+> **Nota:** Inicialmente desarrollé las explicaciones en un documento de Google Docs, pero finalmente he decidido pasarlo directamente a este `README.md` para tener toda la memoria técnica unificada y accesible junto a la configuración del proyecto en el repositorio.
+
+---
 
 ## 1. Conceptos Fundamentales de Docker
 
