@@ -119,7 +119,7 @@ El archivo `compose.yml` permite definir toda la infraestructura multi-contenedo
 3. **Cálculo y Dimensionamiento de Workers en Odoo**:  
    Odoo gestiona la concurrencia mediante trabajadores (*workers*):
    * **Fórmula oficial de Workers**: $\text{Workers} = (\text{Núcleos de CPU} \times 2) + 1$
-   * **Memoria requerida**: $\text{RAM} = \text{Workers} \times ((\text{limit\_memory\_soft} \times 0.8) + (\text{limit\_memory\_hard} \times 0.2))$
+   * **Memoria requerida**: `RAM = Workers * ((limit_memory_soft * 0.8) + (limit_memory_hard * 0.2))`
    * **En desarrollo (`workers = 0`)**: Se fuerza la ejecución en un **único hilo**. Esto es indispensable para permitir la depuración interactiva (usar `pdb` o breakpoints sin bloqueos), ver las trazas unificadas en la terminal y recargar código en vivo sin bifurcación de procesos.
    * **En producción (`workers = 2`, `max_cron_threads = 1`)**: Se activa el modo multiproceso para atender múltiples peticiones concurrentes y desacoplar las tareas automáticas del sistema (cron jobs).
 
@@ -134,7 +134,7 @@ El archivo `compose.yml` permite definir toda la infraestructura multi-contenedo
 | :--- | :--- | :--- | :--- |
 | **Inseguro** | Variables en texto plano en `compose.yml` | **Crítico** | Expuestas en el historial de Git, en inspecciones de infraestructura (`docker compose config`) y visibles para cualquiera con acceso al repositorio. |
 | **Básico** | Archivo `.env` / `env_file` | **Medio** | Desacopla credenciales del código y evita subirlas a Git (mediante `.gitignore`). Sin embargo, las variables quedan inyectadas en el entorno global del contenedor, siendo visibles con `docker inspect <container>` o leyendo `/proc/1/environ`. |
-| **Avanzado (Óptimo)** | **Docker Secrets** | **Alto (Recomendado)** | Las claves no se inyectan como variables de entorno del sistema. Docker monta las credenciales como archivos de solo lectura en memoria RAM (**tmpfs**) bajo `/run/secrets/<nombre_secreto>`. No dejan rastro en el disco del host, no son visibles en `docker inspect` y ofrecen el máximo aislamiento. |
+| **Avanzado (Óptimo)** | **Docker Secrets** | **Alto** | Las claves no se inyectan como variables de entorno del sistema. Docker monta las credenciales como archivos de solo lectura en memoria RAM (**tmpfs**) bajo `/run/secrets/<nombre_secreto>`. No dejan rastro en el disco del host, no son visibles en `docker inspect` y ofrecen el máximo aislamiento. |
 
 #### Implementación Práctica:
 PostgreSQL implementa soporte nativo mediante `POSTGRES_PASSWORD_FILE=/run/secrets/db_password`, leyendo la contraseña directamente desde el archivo montado en memoria sin exponerla jamás en variables de entorno.
