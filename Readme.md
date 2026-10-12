@@ -1,9 +1,5 @@
 # Despliegue y Configuración de Odoo 19 con Docker Compose
 
-Repositorio de infraestructura técnica para el despliegue optimizado y seguro de Odoo 19 y PostgreSQL 18 utilizando Docker Compose. La solución implementa perfiles nativos (`dev` y `prod`), cuotas de recursos para evitar degradación del host, gestión de credenciales sensibles mediante Docker Secrets y políticas estrictas de versionado con Git.
-
----
-
 ## 1. Conceptos Fundamentales de Docker
 
 ### 1.1 Comandos de Docker
