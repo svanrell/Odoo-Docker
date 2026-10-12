@@ -1,0 +1,114 @@
+services:
+  # ==============================================================================
+  # SERVICIO DE BASE DE DATOS (PostgreSQL)
+  # ==============================================================================
+  db:
+    image: postgres:18
+    container_name: odoo_postgres_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-odoo}
+      POSTGRES_USER: ${POSTGRES_USER:-odoo}
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+      PGDATA: /var/lib/postgresql/data/pgdata
+    secrets:
+      - db_password
+    volumes:
+      - db_data:/var/lib/postgresql/data/pgdata
+    networks:
+      - odoo_internal_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-odoo} -d ${POSTGRES_DB:-odoo}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1024M
+        reservations:
+          memory: 512M
+
+  # ==============================================================================
+  # SERVICIO ODOO: PERFIL DE DESARROLLO (dev)
+  # ==============================================================================
+  odoo-dev:
+    image: odoo:19
+    container_name: odoo_app_dev
+    profiles: ["dev"]
+    user: root
+    command: ["odoo", "--dev=all"]
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${ODOO_HOST_PORT:-8069}:8069"
+    secrets:
+      - db_password
+      - odoo_admin_password
+    volumes:
+      - ./config/odoo-dev.conf:/etc/odoo/odoo.conf:ro
+      - ./volumes/addons:/mnt/extra-addons
+      - ./volumes/filestore:/var/lib/odoo/filestore
+      - ./volumes/sessions:/var/lib/odoo/sessions
+    networks:
+      - odoo_internal_network
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2048M
+
+  # ==============================================================================
+  # SERVICIO ODOO: PERFIL DE PRODUCCIÓN (prod)
+  # ==============================================================================
+  odoo-prod:
+    image: odoo:19
+    container_name: odoo_app_prod
+    profiles: ["prod"]
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${ODOO_HOST_PORT:-8069}:8069"
+    secrets:
+      - db_password
+      - odoo_admin_password
+    volumes:
+      - ./config/odoo-prod.conf:/etc/odoo/odoo.conf:ro
+      - ./volumes/addons:/mnt/extra-addons
+      - ./volumes/filestore:/var/lib/odoo/filestore
+    networks:
+      - odoo_internal_network
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2048M
+        reservations:
+          memory: 1024M
+
+# ==============================================================================
+# VOLÚMENES PERSISTENTES
+# ==============================================================================
+volumes:
+  db_data:
+
+# ==============================================================================
+# SECRETOS DE DOCKER (Almacenamiento seguro en tmpfs)
+# ==============================================================================
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+  odoo_admin_password:
+    file: ./secrets/odoo_admin_password.txt
+
+# ==============================================================================
+# REDES VIRTUALES AISLADAS
+# ==============================================================================
+networks:
+  odoo_internal_network:
+    driver: bridge
