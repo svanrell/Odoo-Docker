@@ -1,7 +1,4 @@
 services:
-  # ==============================================================================
-  # SERVICIO DE BASE DE DATOS (PostgreSQL)
-  # ==============================================================================
   db:
     image: postgres:18
     container_name: odoo_postgres_db
@@ -31,9 +28,6 @@ services:
         reservations:
           memory: 512M
 
-  # ==============================================================================
-  # SERVICIO ODOO: PERFIL DE DESARROLLO (dev)
-  # ==============================================================================
   odoo-dev:
     image: odoo:19
     container_name: odoo_app_dev
@@ -61,9 +55,6 @@ services:
           cpus: '2.0'
           memory: 2048M
 
-  # ==============================================================================
-  # SERVICIO ODOO: PERFIL DE PRODUCCIÓN (prod)
-  # ==============================================================================
   odoo-prod:
     image: odoo:19
     container_name: odoo_app_prod
@@ -91,24 +82,15 @@ services:
         reservations:
           memory: 1024M
 
-# ==============================================================================
-# VOLÚMENES PERSISTENTES
-# ==============================================================================
 volumes:
   db_data:
 
-# ==============================================================================
-# SECRETOS DE DOCKER (Almacenamiento seguro en tmpfs)
-# ==============================================================================
 secrets:
   db_password:
     file: ./secrets/db_password.txt
   odoo_admin_password:
     file: ./secrets/odoo_admin_password.txt
 
-# ==============================================================================
-# REDES VIRTUALES AISLADAS
-# ==============================================================================
 networks:
   odoo_internal_network:
     driver: bridge

@@ -1,40 +1,23 @@
-# ==============================================================================
-# ARCHIVO .gitignore - SEGURIDAD Y LIMPIEZA DEL REPOSITORIO
-# ==============================================================================
-
-# Variables de entorno con valores locales
 .env
 *.env.local
 
-# Secretos y credenciales en texto plano (se conservan ejemplos y gitkeep)
+# Secretos
 secrets/*.txt
 !secrets/*.txt.example
 !secrets/.gitkeep
 
-# Datos dinámicos y persistencia de Odoo (NO versionar: RGPD, integridad y peso)
+# Persistencia Odoo y PostgreSQL
 volumes/filestore/*
 !volumes/filestore/.gitkeep
 volumes/sessions/*
 !volumes/sessions/.gitkeep
-
-# Directorio de PostgreSQL si se emplea bind mount local
 volumes/postgres/*
 !volumes/postgres/.gitkeep
 
-# Archivos compilados y temporales de Python
+# Python / IDEs
 **/__pycache__/
 *.py[cod]
-*$py.class
-*.so
-
-# Entornos virtuales
 .venv/
-env/
-venv/
-
-# Archivos de configuración de editores y sistemas operativos
 .idea/
 .vscode/
-*.swp
-*.swo
 .DS_Store

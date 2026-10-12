@@ -255,41 +255,28 @@ Entrega Docker/
 ### 6.2 Archivo `.gitignore`
 
 ```gitignore
-# Variables de entorno con valores locales
 .env
 *.env.local
 
-# Secretos y credenciales en texto plano (se conservan ejemplos y gitkeep)
+# Secretos
 secrets/*.txt
 !secrets/*.txt.example
 !secrets/.gitkeep
 
-# Datos dinámicos y persistencia de Odoo (NO versionar: RGPD, integridad y peso)
+# Persistencia Odoo y PostgreSQL
 volumes/filestore/*
 !volumes/filestore/.gitkeep
 volumes/sessions/*
 !volumes/sessions/.gitkeep
-
-# Directorio de PostgreSQL si se emplea bind mount local
 volumes/postgres/*
 !volumes/postgres/.gitkeep
 
-# Archivos compilados y temporales de Python
+# Python / IDEs
 **/__pycache__/
 *.py[cod]
-*$py.class
-*.so
-
-# Entornos virtuales
 .venv/
-env/
-venv/
-
-# Archivos de configuración de editores y sistemas operativos
 .idea/
 .vscode/
-*.swp
-*.swo
 .DS_Store
 ```
 
@@ -298,11 +285,8 @@ venv/
 ### 6.3 Archivo `.env.example`
 
 ```bash
-# Identificadores de Base de Datos PostgreSQL
 POSTGRES_DB=odoo
 POSTGRES_USER=odoo
-
-# Puertos expuestos en el Host
 ODOO_HOST_PORT=8069
 POSTGRES_DEV_PORT=5432
 ```
@@ -329,57 +313,47 @@ Para inicializar los secretos de Docker se crean los archivos correspondientes (
 #### `config/odoo-dev.conf` (Desarrollo)
 ```ini
 [options]
-; Rutas de módulos y almacenamiento interno
 addons_path = /mnt/extra-addons
 data_dir = /var/lib/odoo
 
-; Conexión a la base de datos
 db_host = db
 db_port = 5432
 db_user = odoo
 db_password = SuperSecure_DB_Pass_2026!
 
-; Optimización de depuración: monohilo para trazas directas y compatibilidad con pdb
+; 0 workers fuerza ejecucion monohilo para depuracion
 workers = 0
 max_cron_threads = 1
 
-; Límites holgados para pruebas e inspección
 limit_time_cpu = 600
 limit_time_real = 1200
 limit_memory_hard = 2684354560
 limit_memory_soft = 2147483648
 
-; Trazas de diagnóstico detalladas
 log_level = debug
 ```
 
 #### `config/odoo-prod.conf` (Producción)
 ```ini
 [options]
-; Rutas de módulos y almacenamiento interno
 addons_path = /mnt/extra-addons
 data_dir = /var/lib/odoo
 
-; Conexión a la base de datos
 db_host = db
 db_port = 5432
 db_user = odoo
 db_password = SuperSecure_DB_Pass_2026!
 
-; Multiproceso para producción: atención concurrente y tareas cron independientes
+; Multiproceso para produccion
 workers = 2
 max_cron_threads = 1
-
-; Habilitar soporte para terminación SSL tras Reverse Proxy (Nginx/Traefik)
 proxy_mode = True
 
-; Límites estrictos para contención de hardware
 limit_time_cpu = 60
 limit_time_real = 120
 limit_memory_hard = 2684354560
 limit_memory_soft = 2147483648
 
-; Registro estándar
 log_level = info
 ```
 
@@ -389,9 +363,6 @@ log_level = info
 
 ```yaml
 services:
-  # ==============================================================================
-  # SERVICIO DE BASE DE DATOS (PostgreSQL)
-  # ==============================================================================
   db:
     image: postgres:18
     container_name: odoo_postgres_db
@@ -421,9 +392,6 @@ services:
         reservations:
           memory: 512M
 
-  # ==============================================================================
-  # SERVICIO ODOO: PERFIL DE DESARROLLO (dev)
-  # ==============================================================================
   odoo-dev:
     image: odoo:19
     container_name: odoo_app_dev
@@ -451,9 +419,6 @@ services:
           cpus: '2.0'
           memory: 2048M
 
-  # ==============================================================================
-  # SERVICIO ODOO: PERFIL DE PRODUCCIÓN (prod)
-  # ==============================================================================
   odoo-prod:
     image: odoo:19
     container_name: odoo_app_prod
@@ -481,24 +446,15 @@ services:
         reservations:
           memory: 1024M
 
-# ==============================================================================
-# VOLÚMENES PERSISTENTES
-# ==============================================================================
 volumes:
   db_data:
 
-# ==============================================================================
-# SECRETOS DE DOCKER (Almacenamiento seguro en tmpfs)
-# ==============================================================================
 secrets:
   db_password:
     file: ./secrets/db_password.txt
   odoo_admin_password:
     file: ./secrets/odoo_admin_password.txt
 
-# ==============================================================================
-# REDES VIRTUALES AISLADAS
-# ==============================================================================
 networks:
   odoo_internal_network:
     driver: bridge
